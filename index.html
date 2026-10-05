@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Normograma ET en Louis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --pg-fondo: #eef1f6;
+    --pg-superficie: #ffffff;
+    --pg-tinta: #171b24;
+    --pg-suave: #586173;
+    --pg-linea: #d9dfe8;
+    --pg-acento: #34508f;
+    --pg-titulo: #1d2d55;
+    --pg-chip: #e3eaf6;
+    --pg-cuidado: #7d5300;
+    --pg-cuidado-fondo: #fbf2dc;
+    --ui: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --ley: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --pg-fondo: #0e121a;
+      --pg-superficie: #161c27;
+      --pg-tinta: #e3e7ee;
+      --pg-suave: #9ba4b5;
+      --pg-linea: #283143;
+      --pg-acento: #93aee6;
+      --pg-titulo: #c3d0ef;
+      --pg-chip: #1c2640;
+      --pg-cuidado: #e8c46e;
+      --pg-cuidado-fondo: #2a2211;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --pg-fondo: #0e121a;
+    --pg-superficie: #161c27;
+    --pg-tinta: #e3e7ee;
+    --pg-suave: #9ba4b5;
+    --pg-linea: #283143;
+    --pg-acento: #93aee6;
+    --pg-titulo: #c3d0ef;
+    --pg-chip: #1c2640;
+    --pg-cuidado: #e8c46e;
+    --pg-cuidado-fondo: #2a2211;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  .entrada, .pista, .aviso-datos, .req p, .pend li, .libro-desc, .v-sub:not(.busq-sub) { text-align: justify; hyphens: auto; }
+  .aviso-datos { display: block; }
+  body {
+    margin: 0;
+    background: var(--pg-fondo);
+    color: var(--pg-tinta);
+    font: 400 15px/1.55 var(--ui);
+    padding-inline: 20px;
+    padding-block: 36px 72px;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--pg-acento); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  .hoja { max-width: 1240px; margin: 0 auto; display: grid; gap: 40px; }
+  .hoja > section, .hoja > header { display: grid; gap: 14px; min-width: 0; }
+  .ceja { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--pg-suave); }
+  h1 { margin: 4px 0 8px; font-size: clamp(27px, 4vw, 36px); line-height: 1.15; font-weight: 600; color: var(--pg-titulo); text-wrap: balance; }
+  h2 { margin: 0; font-size: 20px; font-weight: 600; color: var(--pg-titulo); text-wrap: balance; }
+  .entrada { max-width: 74ch; margin: 0; color: var(--pg-suave); }
+  .entrada b { color: var(--pg-tinta); font-weight: 600; }
+  .aviso-datos { margin: 0; padding: 9px 13px; border-radius: 8px; background: var(--pg-cuidado-fondo); color: var(--pg-cuidado); font-size: 13.5px; max-width: 100%; justify-self: start; }
+  .aviso-datos b { font-weight: 600; }
+
+  /* pestañas del entregable */
+  .pestanas { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pestana { display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0 14px; border: 1px solid var(--pg-linea); border-radius: 9px; background: var(--pg-superficie); color: var(--pg-tinta); font-size: 13.5px; font-weight: 500; cursor: pointer; }
+  .pestanas { align-items: center; }
+  .paso-flecha { color: var(--pg-suave); font-size: 14px; }
+  .pestana small { font: 600 10.5px var(--mono); color: var(--pg-suave); }
+  .pestana[aria-selected="true"] { border-color: var(--pg-acento); background: var(--pg-chip); color: var(--pg-acento); font-weight: 600; }
+  .pestana[aria-selected="true"] small { color: var(--pg-acento); }
+  .pista { margin: 0; font-size: 13.5px; color: var(--pg-suave); max-width: 90ch; }
+  .pista b { color: var(--pg-tinta); font-weight: 600; }
+
+  /* ══ PANTALLA LOUIS (siempre clara) ══ */
+  .louis {
+    --l-fondo: #f2f4f8; --l-blanco: #ffffff; --l-tinta: #151a23; --l-gris: #5f6878; --l-gris2: #8a93a3;
+    --l-linea: #e2e6ed; --l-activo: #e4ecf8; --l-azul: #34508f; --l-azul2: #8fa3cc; --l-azul-suave: #eef3fb;
+    --l-mod: #8a4b12; --l-mod-fondo: #fcefe2; --l-ok: #1f7a4d; --l-ok-fondo: #e6f4ec; --l-nota: #fff7d6; --l-nota-borde: #ecd98a;
+    color-scheme: light;
+    display: grid; grid-template-columns: 216px minmax(0, 1fr);
+    min-height: 680px; background: var(--l-fondo); color: var(--l-tinta);
+    border: 1px solid var(--pg-linea); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 20px 44px -26px rgba(29, 45, 85, .4);
+    font: 400 13px/1.5 var(--ui); min-width: 0;
+  }
+  .lat { display: flex; flex-direction: column; background: var(--l-blanco); border-right: 1px solid var(--l-linea); min-width: 0; }
+  .logo { padding: 16px 18px 14px; font-size: 24px; font-weight: 300; letter-spacing: .01em; border-bottom: 1px solid var(--l-linea); }
+  .nav { display: grid; gap: 2px; padding: 10px 8px; border-bottom: 1px solid var(--l-linea); }
+  .nav-it { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 9px; background: none; text-align: left; font-size: 13px; font-weight: 500; color: var(--l-tinta); cursor: pointer; }
+  .nav-it svg { flex: none; color: var(--l-gris); }
+  .nav-it:hover { background: #f4f6fa; }
+  .nav-it.activo { background: var(--l-activo); color: var(--l-azul); }
+  .nav-it.activo svg { color: var(--l-azul); }
+  .nav-it .flecha { margin-left: auto; }
+  .sub-bib { display: grid; gap: 1px; padding: 2px 0 4px 26px; }
+  .sub-bib button { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 0; border-radius: 7px; background: none; font-size: 12.5px; color: var(--l-tinta); text-align: left; cursor: pointer; }
+  .sub-bib button:hover { background: #f4f6fa; }
+  .sub-bib button.activo { color: var(--l-azul); font-weight: 600; }
+  .sub-bib button[disabled] { color: var(--l-gris2); cursor: default; }
+  .sub-bib button[disabled]:hover { background: none; }
+  .sub-bib .pto { width: 6px; height: 6px; border-radius: 2px; flex: none; }
+  .usuario { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--l-linea); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #eef1f6; border: 1px solid var(--l-linea); font-size: 11.5px; font-weight: 600; color: var(--l-azul); flex: none; }
+  .usuario b { display: block; font-size: 12.5px; font-weight: 600; }
+  .usuario span { display: block; font-size: 11px; color: var(--l-gris); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .usuario > div { min-width: 0; }
+
+  .principal { min-width: 0; display: flex; flex-direction: column; }
+  .vista { flex: 1; min-width: 0; }
+
+  /* Vista 1: estantería */
+  .v-bib { padding: 34px 34px 40px; display: grid; gap: 22px; align-content: start; }
+  .busq-tit { color: var(--l-tinta); text-align: center; font-size: clamp(34px, 5vw, 50px) !important; font-weight: 300 !important; margin-top: 6px !important; }
+  .busq-sub { text-align: center; margin: -10px 0 4px !important; font-size: 15px !important; color: #3d4556 !important; }
+  .busq-barra { display: flex; align-items: center; gap: 12px; height: 62px; padding: 0 8px 0 20px; border-radius: 12px; background: #f7f8fb; box-shadow: 0 4px 16px -6px rgba(21,26,35,.12); color: var(--l-gris); }
+  .busq-barra input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font-size: 14.5px; color: var(--l-tinta); }
+  .busq-btn { display: grid; place-items: center; width: 70px; height: 48px; border-radius: 10px; background: var(--l-azul2); color: #fff; flex: none; }
+  .busq-filtro { display: inline-flex; align-items: center; gap: 9px; height: 40px; padding: 0 18px; border: 1px solid var(--l-linea); border-radius: 999px; color: var(--l-azul); font-size: 13.5px; font-weight: 500; }
+  .busq-norm-tit { display: grid; gap: 2px; margin-top: 10px; }
+  .busq-norm-tit b { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+  .busq-norm-tit span { font-size: 12.5px; color: var(--l-gris); }
+  .busq-vacio { display: grid; justify-items: center; gap: 6px; margin-top: 18px; text-align: center; color: var(--l-gris); font-size: 13.5px; }
+  .busq-vacio b { color: var(--l-tinta); font-size: 17px; font-weight: 600; margin-top: 8px; }
+  .busq-circ { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--l-linea); background: #f7f8fb; color: #3d4556; }
+  .v-bib { max-width: 980px; width: 100%; margin: 0 auto; }
+  .v-libro { padding: 26px 34px 40px; display: grid; gap: 18px; align-content: start; max-width: 980px; width: 100%; margin: 0 auto; }
+  .miga-btn { border: 0; padding: 0; background: none; font: inherit; color: var(--l-azul); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .libro-cab { display: flex; gap: 22px; align-items: flex-start; }
+  .mini-tapa { flex: none; width: 92px; height: 132px; border-radius: 3px 7px 7px 3px; background: #2c4580; color: #fff; padding: 14px 10px 10px 16px; font: 600 12.5px/1.2 var(--ley); box-shadow: inset 6px 0 0 rgba(0,0,0,.18), 3px 5px 12px -5px rgba(21,26,35,.5); }
+  .libro-info { display: grid; gap: 6px; min-width: 0; }
+  .libro-tit { margin: 0; font: 600 26px/1.2 var(--ley); color: #121722; }
+  .libro-desc { margin: 0; color: #3d4556; font-size: 14px; max-width: 60ch; }
+  .libro-datos { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--l-gris); }
+  .libro-datos b { color: var(--l-tinta); }
+  .buscar-libro { height: 42px; max-width: 560px; background: var(--l-blanco); }
+  .resultados { display: grid; gap: 6px; }
+  .res-cab { font-size: 12px; color: var(--l-gris); }
+  .res-it { display: grid; gap: 3px; width: 100%; padding: 11px 14px; border: 1px solid var(--l-linea); border-radius: 9px; background: var(--l-blanco); text-align: left; cursor: pointer; }
+  .res-it:hover { border-color: var(--l-azul2); }
+  .res-it b { font-size: 13px; font-weight: 600; }
+  .res-it b .an { font: 500 11.5px var(--mono); color: var(--l-azul); margin-right: 8px; }
+  .res-it span { font: 400 13px/1.5 var(--ley); color: #3d4556; }
+  mark { background: #fbe7a1; color: inherit; border-radius: 2px; padding: 0 1px; }
+  .libro-sec { margin: 6px 0 -6px; font: 600 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--l-gris); }
+  .partes { display: grid; gap: 8px; }
+  .parte { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; width: 100%; padding: 14px 18px; border: 1px solid var(--l-linea); border-radius: 10px; background: var(--l-blanco); text-align: left; cursor: pointer; }
+  .parte:hover:not([disabled]) { border-color: var(--l-azul2); box-shadow: 0 4px 12px -8px rgba(52,80,143,.5); }
+  .parte b { font-size: 14px; font-weight: 600; color: var(--l-tinta); }
+  .parte .p-sub { grid-column: 1; font-size: 12px; color: var(--l-gris); }
+  .parte .p-cta { grid-row: 1 / span 2; grid-column: 2; font-size: 12px; font-weight: 600; color: var(--l-azul); white-space: nowrap; }
+  .parte[disabled] { cursor: default; background: #f7f8fb; }
+  .parte[disabled] b { color: var(--l-gris); }
+  .parte[disabled] .p-cta { color: var(--l-gris2); font-weight: 500; }
+  .v-tit { margin: 0; font-size: 34px; font-weight: 400; letter-spacing: -.01em; }
+  .v-sub { margin: -14px 0 0; color: var(--l-gris); font-size: 14px; }
+  .estante { display: grid; gap: 0; }
+  .libros { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 22px 18px; padding: 30px 12px 0; }
+  .tabla-estante { height: 14px; border-radius: 3px; background: linear-gradient(#d9dee7, #c9d0dc); box-shadow: 0 6px 12px -8px rgba(21, 26, 35, .45); }
+  .libro { position: relative; width: 122px; height: 176px; border: 0; padding: 0; background: none; cursor: pointer; text-align: left; transition: transform .18s ease; }
+  .libro:hover:not([disabled]) { transform: translateY(-6px); }
+  .libro[disabled] { cursor: default; }
+  .tapa { position: absolute; inset: 0; border-radius: 3px 8px 8px 3px; padding: 16px 14px 14px 22px; display: flex; flex-direction: column; color: #fff; overflow: hidden; box-shadow: inset 7px 0 0 rgba(0,0,0,.18), inset 9px 0 0 rgba(255,255,255,.12), 4px 6px 14px -6px rgba(21,26,35,.5); }
+  .tapa::after { content: ""; position: absolute; left: 22px; right: 14px; top: 12px; height: 1px; background: rgba(255,255,255,.35); }
+  .tapa .t-sup { font: 500 9px var(--mono); letter-spacing: .1em; text-transform: uppercase; opacity: .8; margin-top: 6px; }
+  .tapa .t-tit { font: 600 14px/1.2 var(--ley); margin-top: 10px; text-wrap: balance; }
+  .tapa .t-inf { margin-top: auto; font: 500 9.5px/1.35 var(--mono); opacity: .85; }
+  .tapa .t-inf::before { content: ""; display: block; width: 26px; height: 1px; background: rgba(255,255,255,.5); margin-bottom: 7px; }
+  .libro.prox .tapa { filter: saturate(.25) brightness(1.08); opacity: .72; }
+  .cinta { position: absolute; top: -10px; right: -6px; z-index: 2; padding: 3px 9px; border-radius: 4px 0 0 4px; background: #ffffff; color: var(--l-gris); font: 600 9.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 2px 6px rgba(21,26,35,.18); }
+  .cinta.lista { background: var(--l-ok); color: #fff; }
+  .leyenda-est { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 12px; color: var(--l-gris); }
+  .leyenda-est b { color: var(--l-tinta); font-weight: 600; }
+
+  /* Vista 2: normograma */
+  .v-et { display: grid; grid-template-columns: 228px minmax(0, 1fr) 264px; min-height: 680px; }
+  .indice { background: var(--l-blanco); border-right: 1px solid var(--l-linea); display: flex; flex-direction: column; min-width: 0; }
+  .ind-cab { padding: 14px 14px 10px; border-bottom: 1px solid var(--l-linea); display: grid; gap: 8px; }
+  .ind-cab b { font-size: 13px; font-weight: 700; }
+  .ind-cab span { font: 500 10.5px var(--mono); color: var(--l-gris); }
+  .buscar { display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 9px; border: 1px solid var(--l-linea); border-radius: 8px; background: var(--l-fondo); color: var(--l-gris); }
+  .buscar input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font-size: 12px; color: var(--l-tinta); }
+  .buscar:focus-within { border-color: var(--l-azul2); background: #fff; }
+  .arbol { overflow: auto; padding: 8px 6px 16px; max-height: 620px; font-size: 12px; }
+  .arbol details { margin: 0; }
+  .arbol summary { list-style: none; display: flex; align-items: flex-start; gap: 6px; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; color: #2a3140; line-height: 1.35; }
+  .arbol summary::-webkit-details-marker { display: none; }
+  .arbol summary::before { content: "›"; flex: none; width: 10px; color: var(--l-gris2); transition: transform .15s; }
+  .arbol details[open] > summary::before { transform: rotate(90deg); }
+  .arbol summary:hover { background: #f4f6fa; }
+  .arbol .nivel { padding-left: 12px; border-left: 1px solid var(--l-linea); margin-left: 12px; }
+  .arbol .grupo { font: 600 9.5px var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--l-gris2); padding: 8px 8px 3px; }
+  .art-link { display: flex; gap: 8px; width: 100%; padding: 5px 8px; border: 0; border-radius: 6px; background: none; text-align: left; font-size: 12px; line-height: 1.35; color: #2a3140; cursor: pointer; }
+  .art-link:hover { background: #f4f6fa; }
+  .art-link.activo { background: var(--l-activo); color: var(--l-azul); font-weight: 600; }
+  .art-link .an { flex: none; min-width: 34px; font: 500 11px var(--mono); color: var(--l-azul); }
+  .art-link .tiene-nota { flex: none; width: 7px; height: 7px; margin-top: 5px; margin-left: auto; border-radius: 50%; background: #e0b52c; }
+  .arbol .apagado summary { cursor: default; }
+  .arbol .apagado summary::before { content: "·"; }
+  .arbol .apagado summary small { font: 500 9.5px var(--mono); margin-left: auto; white-space: nowrap; }
+
+  .lector { min-width: 0; padding: 20px 28px 40px; display: grid; gap: 14px; align-content: start; }
+  .migas { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 11.5px; color: var(--l-gris); }
+  .migas span:last-child { color: var(--l-tinta); font-weight: 600; }
+  .barra-lec { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .btn-l { height: 30px; padding: 0 11px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--l-linea); border-radius: 8px; background: var(--l-blanco); font-size: 12px; font-weight: 500; color: var(--l-tinta); cursor: pointer; }
+  .btn-l:hover:not([disabled]) { border-color: var(--l-azul2); color: var(--l-azul); }
+  .btn-l[disabled] { opacity: .45; cursor: default; }
+  .btn-l.prim { background: var(--l-azul); border-color: var(--l-azul); color: #fff; }
+  .btn-l.prim:hover { color: #fff; filter: brightness(1.08); }
+  .barra-lec .sp { flex: 1; }
+  .hoja-art { background: var(--l-blanco); border: 1px solid var(--l-linea); border-radius: 12px; padding: 22px 26px 24px; display: grid; gap: 14px; }
+  .art-cab { display: grid; gap: 8px; }
+  .art-num { font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--l-azul); }
+  .art-tit { margin: 0; font: 600 21px/1.28 var(--ley); color: #121722; text-wrap: balance; }
+  .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; }
+  .etq { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #eef1f6; color: #3d4556; }
+  .etq.mod { background: var(--l-mod-fondo); color: var(--l-mod); }
+  .etq.vig { background: var(--l-ok-fondo); color: var(--l-ok); }
+  .fuente { font: 500 11.5px var(--mono); color: var(--l-gris); }
+  .editor { font: italic 400 13px/1.5 var(--ley); color: var(--l-mod); background: var(--l-mod-fondo); border-radius: 6px; padding: 7px 11px; }
+  .texto { font: 400 15.5px/1.7 var(--ley); color: #1b2130; max-width: 70ch; text-align: justify; hyphens: auto; }
+  .texto p { margin: 0 0 11px; }
+  .texto p.num { padding-left: 18px; }
+  .texto p.pendiente { font: italic 400 13px/1.5 var(--ui); color: var(--l-gris); text-align: left; }
+  .remite { border: 0; padding: 0 1px; background: none; font: inherit; color: var(--l-azul); text-decoration: underline; text-decoration-color: var(--l-azul2); text-underline-offset: 3px; cursor: pointer; }
+  .remite:hover { background: var(--l-azul-suave); text-decoration-color: var(--l-azul); }
+  .remite.fuera { color: #6b7385; text-decoration-style: dotted; cursor: help; }
+
+  .capas { display: grid; gap: 8px; }
+  .capa { background: var(--l-blanco); border: 1px solid var(--l-linea); border-radius: 10px; overflow: hidden; }
+  .capa summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .capa summary::-webkit-details-marker { display: none; }
+  .capa summary::before { content: "›"; color: var(--l-gris2); transition: transform .15s; }
+  .capa[open] summary::before { transform: rotate(90deg); }
+  .capa summary .cta { margin-left: auto; font: 500 10.5px var(--mono); padding: 1px 7px; border-radius: 5px; background: #eef1f6; color: var(--l-gris); }
+  .capa .cuerpo { padding: 0 14px 14px 32px; display: grid; gap: 9px; font-size: 12.5px; }
+  .ficha { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--l-linea); border-radius: 8px; background: #fbfcfe; }
+  .ficha b { font-size: 12.5px; font-weight: 600; }
+  .ficha p { margin: 0; color: #3d4556; }
+  .ficha .pie-f { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 11px; color: var(--l-gris); }
+  .ficha.demo { border-style: dashed; }
+  .chip-art { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border: 1px solid #cfdaf0; border-radius: 6px; background: var(--l-azul-suave); font: 500 11px var(--mono); color: var(--l-azul); cursor: pointer; }
+  .chip-art:hover { border-color: var(--l-azul); }
+  .lista-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .vacio-c { color: var(--l-gris); font-size: 12px; }
+
+  .panel { background: var(--l-blanco); border-left: 1px solid var(--l-linea); padding: 16px 14px 24px; display: grid; gap: 18px; align-content: start; min-width: 0; }
+  .remisiones { display: grid; gap: 6px; }
+  .remisiones h4 { margin-bottom: 2px !important; }
+  .rem-lab { font-size: 11.5px; color: var(--l-gris); }
+  .panel h4 { margin: 0 0 8px; font: 600 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--l-gris); }
+  .nota-form { display: grid; gap: 8px; }
+  .nota-form textarea { width: 100%; min-height: 84px; resize: vertical; padding: 9px 10px; border: 1px solid var(--l-linea); border-radius: 8px; background: var(--l-fondo); font-size: 12.5px; line-height: 1.45; color: var(--l-tinta); }
+  .nota-form textarea:focus { outline: 0; border-color: var(--l-azul2); background: #fff; }
+  .adj-btn { cursor: pointer; }
+  .nota-ayuda { font-size: 11px; color: var(--l-gris); }
+  .adj-pend, .adjuntos { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+  .panel { grid-template-columns: minmax(0, 1fr); }
+  .panel > *, .nota { min-width: 0; }
+  .adj-pend:empty { display: none; }
+  .adj { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 26px; padding: 0 8px; border: 1px solid var(--l-linea); border-radius: 6px; background: #fff; font-size: 11.5px; color: var(--l-tinta); }
+  .adj .ext { flex: none; font: 600 9px var(--mono); padding: 1px 4px; border-radius: 3px; background: var(--l-azul-suave); color: var(--l-azul); text-transform: uppercase; }
+  .adj .nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .adj .tam { flex: none; font: 500 10px var(--mono); color: var(--l-gris); }
+  .adj .quitar { flex: none; border: 0; background: none; padding: 0 2px; color: var(--l-gris); cursor: pointer; font-size: 13px; line-height: 1; }
+  .nota .adjuntos { margin-top: 7px; }
+  .nota .adj { border-color: var(--l-nota-borde); }
+  .nota-form .fila { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 11px; color: var(--l-gris); }
+  .notas { display: grid; gap: 8px; }
+  .nota { position: relative; padding: 9px 11px 9px 12px; border: 1px solid var(--l-nota-borde); border-radius: 8px; background: var(--l-nota); font-size: 12.5px; line-height: 1.45; }
+  .nota time { display: block; margin-top: 5px; font: 500 10px var(--mono); color: #8a7a3c; }
+  .nota .borrar { position: absolute; top: 5px; right: 6px; width: 22px; height: 22px; border: 0; border-radius: 5px; background: none; color: #8a7a3c; cursor: pointer; font-size: 14px; line-height: 1; }
+  .nota .borrar:hover { background: rgba(0,0,0,.06); }
+  .nota .ej { font: 600 9px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: #8a7a3c; }
+
+  /* Vista 3: mis notas */
+  .v-notas { padding: 30px 32px 40px; display: grid; gap: 18px; align-content: start; }
+  .tabla-notas { width: 100%; border-collapse: collapse; background: var(--l-blanco); border: 1px solid var(--l-linea); border-radius: 10px; overflow: hidden; font-size: 12.5px; }
+  .tabla-notas th { text-align: left; padding: 10px 14px; background: #f7f9fc; font: 600 10px var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--l-gris); border-bottom: 1px solid var(--l-linea); }
+  .tabla-notas td { padding: 11px 14px; border-bottom: 1px solid var(--l-linea); vertical-align: top; }
+  .tabla-notas tr:last-child td { border-bottom: 0; }
+  .tabla-notas td.fecha { font: 500 11px var(--mono); color: var(--l-gris); white-space: nowrap; }
+  .envoltura-tabla { overflow-x: auto; }
+
+  .toast { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); padding: 8px 14px; border-radius: 8px; background: #1d2433; color: #fff; font-size: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.25); z-index: 5; }
+  .principal { position: relative; }
+
+  /* requisitos */
+  .reqs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .req { background: var(--pg-superficie); border: 1px solid var(--pg-linea); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+  .req b { font-size: 14px; font-weight: 600; color: var(--pg-titulo); }
+  .req p { margin: 0; font-size: 13.5px; color: var(--pg-suave); }
+  .req .donde { font: 500 11px var(--mono); color: var(--pg-acento); }
+  .pend { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 80ch; color: var(--pg-suave); font-size: 14px; }
+  .pend b { color: var(--pg-tinta); font-weight: 600; }
+
+  @media (max-width: 1120px) {
+    .v-et { grid-template-columns: 220px minmax(0, 1fr); }
+    .panel { grid-column: 2; border-left: 0; border-top: 1px solid var(--l-linea); }
+  }
+  @media (max-width: 820px) {
+    .louis { grid-template-columns: 1fr; }
+    .lat { border-right: 0; border-bottom: 1px solid var(--l-linea); }
+    .lat .nav, .lat .usuario { display: none; }
+    .logo { border-bottom: 0; }
+    .v-et { grid-template-columns: 1fr; }
+    .indice { border-right: 0; border-bottom: 1px solid var(--l-linea); }
+    .arbol { max-height: 260px; }
+    .panel { grid-column: 1; }
+    .lector { padding: 16px 14px 28px; }
+    .hoja-art { padding: 18px 16px; }
+    .v-bib, .v-notas, .v-libro { padding: 22px 16px 30px; }
+    .libro-cab { flex-direction: column; }
+    .libros { justify-content: center; padding-inline: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hoja">
+  <header>
+    <div class="ceja">Proyecto Bibliotecas · Louis · Paso 1</div>
+    <h1>El Estatuto Tributario en Louis, como normograma</h1>
+    <p class="entrada">Maqueta navegable del primer paso: exponer el <b>Estatuto Tributario (Decreto 624 de 1989)</b> dentro de Louis con la estructura del Normograma de la DIAN. Cada artículo muestra su texto vigente, <b>quién lo modificó</b>, notas de vigencia, <b>doctrina y jurisprudencia concordante</b>, remisiones con hipervínculo a otros artículos y las <b>notas propias</b> del usuario, sin salir de la plataforma.</p>
+    <p class="aviso-datos"><b>Sobre el contenido:</b> el texto de los artículos y las notas de modificación vienen del Normograma DIAN. Las fichas de doctrina y jurisprudencia marcadas como <b>ejemplo</b> muestran dónde va cada pieza; su contenido real se carga en la implementación.</p>
+  </header>
+
+  <section>
+    <div class="pestanas" role="tablist" aria-label="Vistas de la maqueta">
+      <button class="pestana" role="tab" id="tab-bib" aria-selected="true" data-vista="bib"><small>Paso 1</small>Búsqueda</button>
+      <span class="paso-flecha" aria-hidden="true">→</span>
+      <button class="pestana" role="tab" id="tab-libro" aria-selected="false" data-vista="libro"><small>Paso 2</small>Entra al libro</button>
+      <span class="paso-flecha" aria-hidden="true">→</span>
+      <button class="pestana" role="tab" id="tab-et" aria-selected="false" data-vista="et"><small>Paso 3</small>Lee el artículo</button>
+    </div>
+    <p class="pista" id="pista"></p>
+
+    <div class="louis" id="louis">
+      <aside class="lat">
+        <div class="logo">Louis</div>
+        <nav class="nav" aria-label="Menú de Louis">
+          <button class="nav-it" type="button" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
+          <button class="nav-it activo" type="button" data-vista="bib">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>Búsqueda</button>
+          <button class="nav-it" type="button" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="4" height="16"/><rect x="8" y="4" width="4" height="16"/><path d="M13.5 5.2l3.8-1 3.4 14.6-3.8 1z"/></svg>Bibliotecas
+            <svg class="flecha" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="sub-bib"><button type="button" tabindex="-1" style="color:#5f6878">+ Nueva biblioteca</button></div>
+          
+          <button class="nav-it" type="button" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5z"/></svg>Mis formatos</button>
+          <button class="nav-it" type="button" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Otras herramientas
+            <svg class="flecha" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        </nav>
+        <div class="usuario">
+          <div class="avatar">DV</div>
+          <div><b>Daniela Valderrama</b><span>daniela.valderrama@esguerrajhr.com</span></div>
+        </div>
+      </aside>
+
+      <main class="principal">
+        <!-- VISTA 1 -->
+        <div class="vista v-bib" id="v-bib">
+          <h2 class="v-tit busq-tit">Búsqueda</h2>
+          <p class="v-sub busq-sub">Encuentra y lee la norma, la sentencia o el precedente.</p>
+          <label class="busq-barra">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+            <input id="busq-input" type="search" placeholder="Devolución del GMF">
+            <span class="busq-btn" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg></span>
+          </label>
+          <div><span class="busq-filtro"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>Seleccionar categorías <span style="opacity:.5">·</span> <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span></div>
+          <div class="busq-norm-tit"><b><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>Comienza tu búsqueda</b><span>Consulta la norma completa con sus modificaciones, doctrina y jurisprudencia.</span></div>
+          <div class="estante">
+            <div class="libros" id="libros"></div>
+            <div class="tabla-estante"></div>
+          </div>
+          <div class="leyenda-est"><span><b>1 disponible</b> · Estatuto Tributario</span><span>5 en preparación</span><span>Fuente base: Normograma DIAN</span></div>
+          
+        </div>
+
+        <!-- VISTA LIBRO -->
+        <div class="vista v-libro" id="v-libro" hidden>
+          <div class="migas"><button type="button" class="miga-btn" data-vista="bib">Búsqueda</button><span aria-hidden="true">›</span><span>Estatuto Tributario</span></div>
+          <div class="libro-cab">
+            <span class="mini-tapa"><span>Estatuto Tributario</span></span>
+            <div class="libro-info">
+              <span class="art-num">Normograma · Tributario</span>
+              <h2 class="libro-tit">Estatuto Tributario</h2>
+              <p class="libro-desc">Decreto 624 de 1989. Impuestos administrados por la DIAN, con sus modificaciones, doctrina y jurisprudencia.</p>
+              
+            </div>
+          </div>
+          <label class="buscar buscar-libro">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+            <input id="ir-art" type="search" placeholder="Busca por artículo o palabra clave (ej. 27, dividendos, cesantías)" autocomplete="off">
+          </label>
+          <div class="resultados" id="res-libro" hidden></div>
+          <h3 class="libro-sec">Contenido</h3>
+          <div class="partes" id="partes"></div>
+        </div>
+
+        <!-- VISTA 2 -->
+        <div class="vista v-et" id="v-et" hidden>
+          <div class="indice">
+            <div class="ind-cab">
+              <div><b>Estatuto Tributario</b><br><span>Decreto 624 de 1989</span></div>
+              <label class="buscar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+                <input id="filtro" type="search" placeholder="Artículo o palabra">
+              </label>
+            </div>
+            <div class="arbol" id="arbol"></div>
+          </div>
+
+          <div class="lector">
+            <div class="migas" id="migas"></div>
+            <div class="barra-lec">
+              <button class="btn-l" id="btn-volver" type="button" disabled>← Volver</button>
+              <button class="btn-l" id="btn-ant" type="button">Anterior</button>
+              <button class="btn-l" id="btn-sig" type="button">Siguiente</button>
+              <span class="sp"></span>
+              <button class="btn-l prim" id="btn-nota" type="button">+ Nota</button>
+            </div>
+            <article class="hoja-art" id="hoja-art"></article>
+            <div class="capas" id="capas"></div>
+          </div>
+
+          <aside class="panel">
+            <div>
+              <h4>Mis notas en este artículo</h4>
+              <div class="nota-form">
+                <textarea id="nota-txt" placeholder="Escribe una nota sobre este artículo…"></textarea>
+                <div class="adj-pend" id="adj-pend"></div>
+                <div class="fila"><label class="btn-l adj-btn" for="nota-archivo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/></svg>Adjuntar</label><input id="nota-archivo" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt" hidden><button class="btn-l prim" id="nota-guardar" type="button">Guardar nota</button></div>
+                <span class="nota-ayuda">Solo tú la ves · PDF, Word, Excel o imagen</span>
+              </div>
+            </div>
+            <div class="notas" id="notas"></div>
+            <div class="remisiones">
+              <h4>Remisiones</h4>
+              <span class="rem-lab">Lo citan</span>
+              <div class="lista-chips" id="entrantes"></div>
+              <span class="rem-lab">Remite a</span>
+              <div class="lista-chips" id="salientes"></div>
+            </div>
+          </aside>
+        </div>
+
+        
+        <div class="toast" id="toast" hidden></div>
+      </main>
+    </div>
+  </section>
+
+    </div>
+
+<script>
+(function () {
+  // ── Bibliotecas ──
+  var BIBLIOTECAS = [
+    { id: 'et', sup: 'Tributario', tit: 'Estatuto Tributario', inf: 'Decreto 624\nde 1989', color: '#2c4580', lista: true },
+    { id: 'com', sup: 'Comercial', tit: 'Código de Comercio', inf: 'Decreto 410\nde 1971', color: '#3e6b5a' },
+    { id: 'civ', sup: 'Civil', tit: 'Código Civil', inf: 'Ley 57\nde 1887', color: '#7a4a2a' },
+    { id: 'pen', sup: 'Penal', tit: 'Código Penal', inf: 'Ley 599\nde 2000', color: '#5b3f72' },
+    { id: 'lab', sup: 'Laboral', tit: 'Código Sustantivo del Trabajo', inf: 'Decreto 2663\nde 1950', color: '#8a6a1c' },
+    { id: 'cgp', sup: 'Procesal', tit: 'Código General del Proceso', inf: 'Ley 1564\nde 2012', color: '#4a5566' }
+  ];
+
+  // ── Índice (estructura del Normograma DIAN) ──
+  var INDICE = [
+    { tit: 'Título Preliminar. Obligación tributaria', abierto: true, grupos: [
+      { g: 'Obligación tributaria', arts: ['1'] },
+      { g: 'Sujetos pasivos', arts: ['2', '3', '4'] }
+    ] },
+    { tit: 'Libro Primero. Impuesto sobre la renta y complementarios', abierto: true, grupos: [
+      { g: 'Disposiciones generales', arts: ['5', '6'] },
+      { g: 'Sujetos pasivos', arts: ['7', '11'] }
+    ], hijos: [
+      { tit: 'Título I. Renta', abierto: true, hijos: [
+        { tit: 'Capítulo I. Ingresos', abierto: true, grupos: [ { g: '', arts: ['26', '27', '28', '29', '30'] } ] }
+      ] }
+    ] },
+    { tit: 'Libro Segundo. Retención en la fuente', apagado: true },
+    { tit: 'Libro Tercero. Impuesto sobre las ventas', apagado: true },
+    { tit: 'Libro Cuarto. Impuesto de timbre nacional', apagado: true },
+    { tit: 'Libro Quinto. Procedimiento tributario, sanciones y estructura de la DIAN', apagado: true },
+    { tit: 'Libro Sexto. Gravamen a los movimientos financieros', apagado: true }
+  ];
+
+  var RUTA = {
+    tp: ['Título Preliminar', 'Obligación tributaria'],
+    tps: ['Título Preliminar', 'Sujetos pasivos'],
+    l1g: ['Libro Primero', 'Disposiciones generales'],
+    l1s: ['Libro Primero', 'Sujetos pasivos'],
+    l1i: ['Libro Primero', 'Título I. Renta', 'Capítulo I. Ingresos']
+  };
+
+  // Texto: {{27}} o {{27|el artículo 27}} crea el hipervínculo interno.
+  var ARTS = {
+    '1': { tit: 'Origen de la obligación sustancial', ruta: 'tp', fuente: 'Fuente original compilada: L. 52/77 Art. 1o.',
+      texto: ['La obligación tributaria sustancial se origina al realizarse el presupuesto o los presupuestos previstos en la ley como generadores del impuesto y ella tiene por objeto el pago del tributo.'],
+      conc: ['2', '26'], doc: 1, jur: 0 },
+    '2': { tit: 'Contribuyentes', ruta: 'tps', fuente: 'Fuente original compilada: D. 825/78 Art. 2o.',
+      texto: ['Son contribuyentes o responsables directos del pago del tributo los sujetos respecto de quienes se realiza el hecho generador de la obligación sustancial.'],
+      conc: ['1', '3', '4'], doc: 1, jur: 1 },
+    '3': { tit: 'Responsables', ruta: 'tps', fuente: '',
+      texto: ['Son responsables para efectos del impuesto de timbre, las personas que, sin tener el carácter de contribuyentes, deben cumplir obligaciones de éstos por disposición expresa de la ley.'],
+      conc: ['2'], doc: 1, jur: 0 },
+    '4': { tit: 'Sinónimos', ruta: 'tps', fuente: '',
+      texto: ['Para fines del impuesto sobre las ventas se consideran sinónimos los términos contribuyente y responsable.'],
+      conc: ['2', '3'], doc: 1, jur: 1 },
+    '5': { tit: 'El impuesto sobre la renta y sus complementarios constituyen un solo impuesto', ruta: 'l1g', fuente: 'Fuente original compilada: D. 2053/74 Art. 1o.',
+      editor: 'Ver Notas del Editor en los numerales 1 y 2.',
+      texto: ['El impuesto sobre la renta y complementarios se considera como un solo tributo y comprende:',
+        '#1. Para las personas naturales, sucesiones ilíquidas, y bienes destinados a fines especiales en virtud de donaciones o asignaciones modales contemplados en el {{11|artículo 11}}, los que se liquidan con base en la renta, en las ganancias ocasionales, en el patrimonio* y en la transferencia de rentas y ganancias ocasionales al exterior**.',
+        '#2. Para los demás contribuyentes, los que se liquidan con base en la renta, en las ganancias ocasionales y en la transferencia* al exterior de rentas y ganancias ocasionales, así como sobre las utilidades comerciales en el caso de sucursales de sociedades y entidades extranjeras.'],
+      conc: ['7', '11', '26'], doc: 1, jur: 1 },
+    '6': { tit: 'Declaración voluntaria del impuesto sobre la renta', ruta: 'l1g', mod: 'Artículo modificado por el artículo 1 de la Ley 1607 de 2012.',
+      texto: ['El impuesto sobre la renta y complementarios, a cargo de los contribuyentes no obligados a declarar, es el que resulte de sumar las retenciones en la fuente por todo concepto que deban aplicarse a los pagos o abonos en cuenta, según el caso, realizados al contribuyente durante el respectivo año o período gravable.',
+        'PARÁGRAFO. Las personas naturales residentes en el país a quienes les hayan practicado retenciones en la fuente y que de acuerdo con las disposiciones de este Estatuto no estén obligadas a presentar declaración del impuesto sobre la renta y complementarios, podrán presentarla. Dicha declaración produce efectos legales y se regirá por lo dispuesto en el Libro I de este Estatuto.'],
+      conc: ['5', '7'], doc: 1, jur: 1, anterior: true },
+    '7': { tit: 'Las personas naturales están sometidas al impuesto', ruta: 'l1s', fuente: 'Fuente original compilada: D. 2053/74 Art. 3o.',
+      texto: ['Las personas naturales y las sucesiones ilíquidas están sometidas al impuesto sobre la renta y complementarios.',
+        'La sucesión es ilíquida entre la fecha de la muerte del causante y aquélla en la cual se ejecutorie la sentencia aprobatoria de la partición o se autorice la escritura pública cuando se opte por lo establecido en el decreto extraordinario 902 de 1988.'],
+      conc: ['5', '11'], doc: 1, jur: 0 },
+    '11': { tit: 'Bienes destinados a fines especiales', ruta: 'l1s', fuente: 'Fuente original compilada: D. 2053/74 Art. 3o. Inc. 3o.',
+      mod: 'Inciso 2o. adicionado por el artículo 38 de la Ley 488 de 1998.',
+      texto: ['Los bienes destinados a fines especiales, en virtud de donaciones o asignaciones modales, están sometidos al impuesto sobre la renta y complementarios de acuerdo con el régimen impositivo de las personas naturales, excepto cuando los donatarios o asignatarios los usufructúen personalmente. En este último caso, los bienes y las rentas o ganancias ocasionales respectivas se gravan en cabeza de quienes los hayan recibido como donación o asignación.',
+        'Los gastos de financiación ordinaria, extraordinarios o moratorios distintos de los intereses corrientes o moratorios pagados por impuestos, tasas o contribuciones fiscales o parafiscales, serán deducibles de la renta si tienen relación de causalidad con la actividad productora de renta, y distintos de la contribución establecida en los Decretos Legislativos de la Emergencia Económica de 1998.'],
+      conc: ['5', '7'], doc: 1, jur: 0 },
+    '26': { tit: 'Los ingresos son base de la renta líquida', ruta: 'l1i', fuente: 'Fuente original compilada: D. 2053/74 Art. 15',
+      texto: ['La renta líquida gravable se determina así: de la suma de todos los ingresos ordinarios y extraordinarios realizados en el año o período gravable, que sean susceptibles de producir un incremento neto del patrimonio en el momento de su percepción, y que no hayan sido expresamente exceptuados, se restan las devoluciones, rebajas y descuentos, con lo cual se obtienen los ingresos netos. De los ingresos netos se restan, cuando sea el caso, los costos realizados imputables a tales ingresos, con lo cual se obtiene la renta bruta. De la renta bruta se restan las deducciones realizadas, con lo cual se obtiene la renta líquida. Salvo las excepciones legales, la renta líquida es renta gravable y a ella se aplican las tarifas señaladas en la ley.'],
+      conc: ['27', '28', '29'], doc: 2, jur: 1 },
+    '27': { tit: 'Realización del ingreso para los no obligados a llevar contabilidad', ruta: 'l1i',
+      mod: 'Artículo modificado por el artículo 27 de la Ley 1819 de 2016. Numeral 3 adicionado por el artículo 30 de la Ley 2010 de 2019.',
+      texto: ['Para los contribuyentes no obligados a llevar contabilidad se entienden realizados los ingresos cuando se reciben efectivamente en dinero o en especie, en forma que equivalga legalmente a un pago, o cuando el derecho a exigirlos se extingue por cualquier otro modo legal distinto al pago, como en el caso de las compensaciones o confusiones. Por consiguiente, los ingresos recibidos por anticipado, que correspondan a rentas no realizadas, solo se gravan en el año o período gravable en que se realicen.',
+        'Se exceptúan de la norma anterior:',
+        '#1. Los ingresos por concepto de dividendos o participaciones en utilidades, se entienden realizados por los respectivos accionistas, socios, comuneros, asociados, suscriptores o similares, cuando les hayan sido abonados en cuenta en calidad de exigibles. En el caso del numeral 2 del {{30|artículo 30}} de este Estatuto, se entenderá que dichos dividendos o participaciones en utilidades se realizan al momento de la transferencia de las utilidades, y',
+        '#2. Los ingresos provenientes de la enajenación de bienes inmuebles, se entienden realizados en la fecha de la escritura pública correspondiente.',
+        '#3. Los ingresos por concepto de auxilio de cesantías y los intereses sobre cesantías, se entenderán realizados en el momento del pago del empleador directo al trabajador o en el momento de consignación al fondo de cesantías. El tratamiento aquí previsto para el auxilio de cesantías y los intereses sobre cesantías, dará lugar a la aplicación de la renta exenta que establece el numeral 4 del {{206|artículo 206}} del Estatuto Tributario, así como al reconocimiento patrimonial, cuando haya lugar a ello.',
+        '!Texto continúa en el Normograma (régimen tradicional de cesantías del Código Sustantivo del Trabajo). En la implementación se carga completo.'],
+      conc: ['26', '28', '30'], doc: 2, jur: 1, anterior: true },
+    '28': { tit: 'Realización del ingreso para los obligados a llevar contabilidad', ruta: 'l1i',
+      mod: 'Artículo modificado por el artículo 28 de la Ley 1819 de 2016.',
+      texto: ['Para los contribuyentes que estén obligados a llevar contabilidad, los ingresos realizados fiscalmente son los ingresos devengados contablemente en el año o período gravable.',
+        'Los siguientes ingresos, aunque devengados contablemente, generarán una diferencia y su reconocimiento fiscal se hará en el momento en que lo determine este Estatuto y en las condiciones allí previstas:',
+        '#1. En el caso de los dividendos provenientes de sociedades nacionales y extranjeras, el ingreso se realizará en los términos del numeral 1 del {{27|artículo 27}} del Estatuto Tributario.',
+        '#2. En el caso de la venta de bienes inmuebles el ingreso se realizará en los términos del numeral 2 del {{27|artículo 27}} del Estatuto Tributario.',
+        '#3. En las transacciones de financiación que generen ingresos por intereses implícitos de conformidad con los marcos técnicos normativos contables, para efectos del impuesto sobre la renta y complementario, solo se considerará el valor nominal de la transacción o factura o documento equivalente, que contendrá dichos intereses implícitos. En consecuencia, cuando se devengue contablemente, el ingreso por intereses implícitos no tendrá efectos fiscales.',
+        '#4. Los ingresos devengados por concepto de la aplicación del método de participación patrimonial de conformidad con los marcos técnicos normativos contables, no serán objeto del impuesto sobre la renta y complementarios. La distribución de dividendos o la enajenación de la inversión se regirán bajo las disposiciones establecidas en este estatuto.',
+        '#5. Los ingresos devengados por la medición a valor razonable, con cambios en resultados, tales como propiedades de inversión, no serán objeto del Impuesto sobre la Renta y Complementarios, sino hasta el momento de su enajenación o liquidación, lo que suceda primero.',
+        '!Continúan los numerales 6 a 10 (el 7 remite al parágrafo del {{145|artículo 145}}) y los parágrafos 1 a 4. En la implementación se carga completo.'],
+      conc: ['26', '27'], doc: 2, jur: 1, anterior: true },
+    '29': { tit: 'Valor de los ingresos en especie', ruta: 'l1i', fuente: '',
+      texto: ['El valor de los pagos o abonos en especie que sean constitutivos de ingresos, se determina por el valor comercial de las especies en el momento de la entrega. Si en pago de obligaciones pactadas en dinero se dieren especies, el valor de éstas se determina, salvo prueba en contrario, por el precio fijado en el contrato.'],
+      conc: ['26', '27'], doc: 1, jur: 0 },
+    '30': { tit: 'Definición de dividendos o participaciones en utilidades', ruta: 'l1i',
+      mod: 'Artículo modificado por el artículo 30 de la Ley 1819 de 2016.',
+      texto: ['Se entiende por dividendos o participaciones en utilidades:',
+        '#1. Toda distribución de beneficios, en dinero o en especie, con cargo a patrimonio que se realice a los socios, accionistas, comuneros, asociados, suscriptores o similares, excepto la disminución de capital y la prima en colocación de acciones.',
+        '#2. La transferencia de utilidades que corresponden a rentas y ganancias ocasionales de fuente nacional obtenidas a través de los establecimientos permanentes o sucursales en Colombia de personas naturales no residentes o sociedades y entidades extranjeras, a favor de empresas vinculadas en el exterior.'],
+      conc: ['27', '28'], doc: 1, jur: 0, anterior: true }
+  };
+  var ORDEN = ['1', '2', '3', '4', '5', '6', '7', '11', '26', '27', '28', '29', '30'];
+
+  // ── Notas (memoria del navegador, opcional) ──
+  var CLAVE = 'louis-et-notas-v2';
+  var notas = { '27': [{ t: 'Revisar numeral 3 frente a la renta exenta de cesantías (Art. 206 num. 4) para el caso del cliente.', f: '2026-09-25', ej: true, a: [{ n: 'Memorial cesantías cliente.pdf', s: '248 KB' }] }] };
+  try { var g = localStorage.getItem(CLAVE); if (g) notas = JSON.parse(g); } catch (e) {}
+  function guardarNotas() { try { localStorage.setItem(CLAVE, JSON.stringify(notas)); } catch (e) {} }
+
+  // ── Referencias salientes / entrantes ──
+  function salientes(id) {
+    var s = [];
+    ARTS[id].texto.forEach(function (p) { p.replace(/\{\{([\d-]+)(\|[^}]*)?\}\}/g, function (_, n) { if (s.indexOf(n) < 0) s.push(n); }); });
+    return s;
+  }
+  function entrantes(id) {
+    return ORDEN.filter(function (o) { return o !== id && (salientes(o).indexOf(id) >= 0); });
+  }
+
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (t) { return t.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+  // ── Estado ──
+  var vista = 'bib', actual = '27', historial = [];
+
+  var PISTAS = {
+    libro: 'Al entrar al libro el usuario ve primero <b>la portada y el contenido</b> del Estatuto. Puede <b>abrir una parte</b> o <b>buscar por número de artículo o palabra clave</b> (prueba “dividendos” o “sucesión”).',
+    bib: 'Pantalla de <b>Búsqueda</b>: los normogramas quedan debajo del filtro de categorías. <b>Clic en el libro azul</b> para abrir el Estatuto Tributario.',
+    et: '<b>Prueba:</b> en el texto, los <b>artículos subrayados</b> abren la norma citada sin salir; “Volver” regresa. Escribe una nota a la derecha y despliega doctrina y jurisprudencia debajo del artículo.',
+    notas: 'Todas las notas del usuario en un solo lugar. <b>Clic en el artículo</b> para ir a él.'
+  };
+
+  function irVista(v) {
+    vista = v;
+    ['bib', 'libro', 'et'].forEach(function (k) {
+      $('#v-' + k).hidden = k !== v;
+      $('#tab-' + k).setAttribute('aria-selected', k === v ? 'true' : 'false');
+    });
+    document.querySelectorAll('.nav-it[data-vista]').forEach(function (b) { b.classList.toggle('activo', b.dataset.vista === v || ((v === 'et' || v === 'libro') && b.dataset.vista === 'bib')); });
+    $('#pista').innerHTML = PISTAS[v];
+    pintarSubBib();
+    if (v === 'et') pintarArticulo();
+    if (v === 'libro') pintarPartes();
+  }
+
+  function pintarSubBib() {
+    void BIBLIOTECAS.map(function (b) {
+      return '<button type="button" ' + (b.lista ? 'data-bib="' + b.id + '"' : 'disabled') + ' class="' + (b.lista && vista === 'et' ? 'activo' : '') + '"><span class="pto" style="background:' + b.color + (b.lista ? '' : ';opacity:.35') + '"></span>' + esc(b.tit) + '</button>';
+    }).join('');
+  }
+
+  function pintarLibros() {
+    $('#libros').innerHTML = BIBLIOTECAS.map(function (b) {
+      return '<button type="button" class="libro' + (b.lista ? '' : ' prox') + '" ' + (b.lista ? 'data-bib="' + b.id + '" aria-label="Abrir ' + esc(b.tit) + '"' : 'disabled aria-label="' + esc(b.tit) + ', próximamente"') + '>' +
+        '<span class="cinta' + (b.lista ? ' lista' : '') + '">' + (b.lista ? 'Disponible' : 'Próximamente') + '</span>' +
+        '<span class="tapa" style="background:' + b.color + '"><span class="t-sup">' + esc(b.sup) + '</span><span class="t-tit">' + esc(b.tit) + '</span><span class="t-inf">' + esc(b.inf).replace(/\n/g, '<br>') + '</span></span></button>';
+    }).join('');
+  }
+
+  function pintarArbol() {
+    var f = ($('#filtro').value || '').trim().toLowerCase();
+    function artBtn(id) {
+      var a = ARTS[id];
+      if (f && !(('art ' + id + ' ' + a.tit + ' ' + a.texto.join(' ')).toLowerCase().indexOf(f) >= 0 || id === f)) return '';
+      return '<button type="button" class="art-link' + (id === actual ? ' activo' : '') + '" data-art="' + id + '"><span class="an">Art. ' + id + '</span><span>' + esc(a.tit) + '</span>' + ((notas[id] || []).length ? '<span class="tiene-nota" title="Tiene notas"></span>' : '') + '</button>';
+    }
+    function nodo(n) {
+      if (n.apagado) return '<details class="apagado"><summary onclick="return false">' + esc(n.tit) + '</summary></details>';
+      var dentro = (n.grupos || []).map(function (gr) {
+        var b = gr.arts.map(artBtn).join('');
+        return b ? (gr.g ? '<div class="grupo">' + esc(gr.g) + '</div>' : '') + b : '';
+      }).join('') + (n.hijos || []).map(nodo).join('');
+      if (f && !dentro) return '';
+      return '<details' + (n.abierto || f ? ' open' : '') + '><summary>' + esc(n.tit) + '</summary><div class="nivel">' + dentro + '</div></details>';
+    }
+    $('#arbol').innerHTML = INDICE.map(nodo).join('') || '<p class="vacio-c" style="padding:8px">Sin resultados en los artículos cargados.</p>';
+  }
+
+  function enlazar(t) {
+    return esc(t).replace(/\{\{([\d-]+)(?:\|([^}]*))?\}\}/g, function (_, n, lab) {
+      lab = lab || ('artículo ' + n);
+      if (ARTS[n]) return '<button type="button" class="remite" data-art="' + n + '">' + lab + '</button>';
+      return '<span class="remite fuera" title="Art. ' + n + ': en la implementación abre el artículo; no está cargado en esta maqueta">' + lab + '</span>';
+    });
+  }
+
+  function chip(id) {
+    return ARTS[id] ? '<button type="button" class="chip-art" data-art="' + id + '">Art. ' + id + '</button>' : '<span class="chip-art" style="cursor:help;opacity:.6" title="No cargado en la maqueta">Art. ' + id + '</span>';
+  }
+
+  function pintarArticulo() {
+    var a = ARTS[actual];
+    $('#migas').innerHTML = '<button type="button" class="miga-btn" data-vista="bib">Búsqueda</button><span aria-hidden="true">›</span><button type="button" class="miga-btn" data-vista="libro">Estatuto Tributario</button><span aria-hidden="true">›</span>' + RUTA[a.ruta].concat(['Art. ' + actual]).map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('<span aria-hidden="true">›</span>');
+    var h = '<div class="art-cab"><span class="art-num">Artículo ' + actual + '</span><h3 class="art-tit">' + esc(a.tit) + '</h3><div class="etiquetas">' +
+      (a.mod ? '<span class="etq mod">Modificado</span>' : '<span class="etq">Texto compilado original</span>') + '<span class="etq vig">Vigente</span></div>' +
+      (a.fuente ? '<div class="fuente">&lt;' + esc(a.fuente) + '&gt;</div>' : '') +
+      (a.mod ? '<div class="editor">&lt;' + esc(a.mod) + ' El nuevo texto es el siguiente:&gt;</div>' : '') +
+      (a.editor ? '<div class="editor">&lt;' + esc(a.editor) + '&gt;</div>' : '') + '</div><div class="texto">' +
+      a.texto.map(function (p) {
+        if (p[0] === '#') return '<p class="num">' + enlazar(p.slice(1)) + '</p>';
+        if (p[0] === '!') return '<p class="pendiente">[' + enlazar(p.slice(1)) + ']</p>';
+        return '<p>' + enlazar(p) + '</p>';
+      }).join('') + '</div>';
+    $('#hoja-art').innerHTML = h;
+    resaltarTexto();
+
+    // capas del normograma
+    var vig = a.mod
+      ? '<div class="ficha"><b>' + esc(a.mod) + '</b><p>Registro de la reforma que dio origen al texto vigente, con enlace a la ley modificatoria.</p></div>'
+      : '<div class="vacio-c">Sin modificaciones registradas. Texto compilado original.</div>';
+    var docs = '', jurs = '';
+    for (var i = 0; i < a.doc; i++) docs += '<div class="ficha demo"><b>Concepto DIAN · número y fecha</b><p>Extracto del concepto que interpreta este artículo.</p><div class="pie-f"><span>Remite a:</span>' + chip(actual) + (a.conc[i] ? chip(a.conc[i]) : '') + '<span>· ejemplo</span></div></div>';
+    for (var j = 0; j < a.jur; j++) jurs += '<div class="ficha demo"><b>' + (j % 2 ? 'Corte Constitucional' : 'Consejo de Estado, Sección Cuarta') + ' · radicado y fecha</b><p>Regla de decisión y efecto sobre la vigencia o interpretación del artículo.</p><div class="pie-f"><span>Remite a:</span>' + chip(actual) + '<span>· ejemplo</span></div></div>';
+    var CON_NOTAS = ['5', '6', '11', '27', '28', '30'];
+    var notaEd = CON_NOTAS.indexOf(actual) >= 0
+      ? '<div class="ficha demo"><b>NOTA</b><p>Nota del editor tal como aparece en el Normograma DIAN para este artículo.</p><div class="pie-f"><span>Texto por cargar · ejemplo</span></div></div>'
+      : '<div class="vacio-c">Este artículo no tiene notas del editor.</div>';
+    var capas = [
+      { t: 'Notas del editor', n: CON_NOTAS.indexOf(actual) >= 0 ? 1 : 0, c: notaEd },
+      { t: 'Concordancias', n: a.conc.length, c: '<div class="lista-chips">' + a.conc.map(chip).join('') + '</div>' },
+      { t: 'Doctrina concordante', n: a.doc, c: docs || '<div class="vacio-c">Sin doctrina asociada.</div>', open: true },
+      { t: 'Jurisprudencia concordante', n: a.jur, c: jurs || '<div class="vacio-c">Sin jurisprudencia asociada.</div>' }
+    ];
+    if (a.anterior) capas.push({ t: 'Legislación anterior', n: 1, c: '<div class="ficha demo"><b>Texto original del Decreto 624 de 1989</b><p>Texto previo a la modificación, para comparar versiones.</p></div>' });
+    $('#capas').innerHTML = capas.map(function (c) {
+      return '<details class="capa"' + (c.open ? ' open' : '') + '><summary>' + c.t + '<span class="cta">' + c.n + '</span></summary><div class="cuerpo">' + c.c + '</div></details>';
+    }).join('');
+
+    // panel
+    var ns = notas[actual] || [];
+    $('#notas').innerHTML = ns.map(function (n, k) {
+      return '<div class="nota">' + (n.ej ? '<div class="ej">Nota de ejemplo</div>' : '') + esc(n.t || '') + adjHtml(n.a) + '<time>' + n.f + '</time><button class="borrar" type="button" data-borrar="' + k + '" aria-label="Borrar nota">×</button></div>';
+    }).join('');
+    var ent = entrantes(actual), sal = salientes(actual);
+    $('#entrantes').innerHTML = ent.length ? ent.map(chip).join('') : '<span class="vacio-c">Ninguno</span>';
+    $('#salientes').innerHTML = sal.length ? sal.map(chip).join('') : '<span class="vacio-c">Ninguno</span>';
+
+    var pos = ORDEN.indexOf(actual);
+    $('#btn-ant').disabled = pos <= 0;
+    $('#btn-sig').disabled = pos >= ORDEN.length - 1;
+    $('#btn-volver').disabled = !historial.length;
+    $('#btn-volver').textContent = historial.length ? '← Volver a Art. ' + historial[historial.length - 1] : '← Volver';
+    pintarArbol();
+  }
+
+  function abrir(id, conHistorial) {
+    if (!ARTS[id] || id === actual && vista === 'et') { irVista('et'); return; }
+    if (conHistorial && vista === 'et') historial.push(actual);
+    actual = id;
+    irVista('et');
+    $('#hoja-art').scrollIntoView({ block: 'nearest' });
+  }
+
+  function artsDe(n) { var a = []; (n.grupos || []).forEach(function (g) { a = a.concat(g.arts); }); (n.hijos || []).forEach(function (h) { a = a.concat(artsDe(h)); }); return a; }
+  function subsDe(n) { var s = (n.grupos || []).map(function (g) { return g.g; }).filter(Boolean); (n.hijos || []).forEach(function (h) { s.push(h.tit.split('.')[0]); }); return s; }
+  function pintarPartes() {
+    $('#partes').innerHTML = INDICE.map(function (n) {
+      if (n.apagado) return '<button type="button" class="parte" data-sin-cargar="1"><b>' + esc(n.tit) + '</b><span class="p-cta">Abrir →</span></button>';
+      var a = artsDe(n);
+      return '<button type="button" class="parte" data-art="' + a[0] + '"><b>' + esc(n.tit) + '</b><span class="p-sub">' + esc(subsDe(n).join(' · ')) + ' · Arts. ' + a[0] + ' a ' + a[a.length - 1] + '</span><span class="p-cta">Abrir →</span></button>';
+    }).join('');
+  }
+
+  function pintarTablaNotas() {
+    var filas = [];
+    ORDEN.forEach(function (id) { (notas[id] || []).forEach(function (n) { filas.push('<tr><td>' + chip(id) + '<div style="margin-top:4px;color:#5f6878">' + esc(ARTS[id].tit) + '</div></td><td>' + (n.ej ? '<span class="etq" style="margin-bottom:4px">Ejemplo</span><br>' : '') + esc(n.t || '') + adjHtml(n.a) + '</td><td class="fecha">' + n.f + '</td></tr>'); }); });
+    $('#tbody-notas').innerHTML = filas.join('') || '<tr><td colspan="3" class="vacio-c">Aún no hay notas. Abre un artículo y escribe una.</td></tr>';
+  }
+
+  function toast(t) { var el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 1800); }
+
+  // ── Eventos ──
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-sin-cargar]')) { toast('Esta parte no está cargada en la maqueta'); return; }
+    var t = e.target.closest('[data-vista],[data-bib],[data-art],[data-borrar]');
+    if (!t) return;
+    if (t.dataset.vista) { irVista(t.dataset.vista); return; }
+    if (t.dataset.bib) { historial = []; irVista('libro'); return; }
+    if (t.dataset.art) {
+      resaltar = t.dataset.q || '';
+      if (t.classList.contains('res-it')) { historial = []; abrir(t.dataset.art, false); return; }
+      var desdeTexto = t.classList.contains('remite') || t.classList.contains('chip-art');
+      abrir(t.dataset.art, desdeTexto);
+      return;
+    }
+    if (t.dataset.borrar != null) {
+      notas[actual].splice(+t.dataset.borrar, 1);
+      if (!notas[actual].length) delete notas[actual];
+      guardarNotas(); pintarArticulo(); toast('Nota borrada');
+    }
+  });
+  $('#btn-volver').addEventListener('click', function () { resaltar = ''; if (historial.length) { actual = historial.pop(); pintarArticulo(); } });
+  $('#btn-ant').addEventListener('click', function () { resaltar = ''; var p = ORDEN.indexOf(actual); if (p > 0) { actual = ORDEN[p - 1]; historial = []; pintarArticulo(); } });
+  $('#btn-sig').addEventListener('click', function () { resaltar = ''; var p = ORDEN.indexOf(actual); if (p < ORDEN.length - 1) { actual = ORDEN[p + 1]; historial = []; pintarArticulo(); } });
+  $('#btn-nota').addEventListener('click', function () { $('#nota-txt').focus(); });
+  var pendientes = [];
+  function tamano(b) { return b < 1024 * 1024 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
+  function adjHtml(lista, quitar) {
+    if (!lista || !lista.length) return '';
+    return '<div class="adjuntos">' + lista.map(function (a, i) {
+      var ext = (a.n.split('.').pop() || '').slice(0, 4);
+      return '<span class="adj" title="' + esc(a.n) + '"><span class="ext">' + esc(ext) + '</span><span class="nom">' + esc(a.n) + '</span><span class="tam">' + a.s + '</span>' + (quitar ? '<button type="button" class="quitar" data-quitar-adj="' + i + '" aria-label="Quitar ' + esc(a.n) + '">×</button>' : '') + '</span>';
+    }).join('') + '</div>';
+  }
+  function pintarPendientes() { $('#adj-pend').innerHTML = adjHtml(pendientes, true); }
+  $('#nota-archivo').addEventListener('change', function (e) {
+    Array.prototype.forEach.call(e.target.files, function (f) { pendientes.push({ n: f.name, s: tamano(f.size) }); });
+    e.target.value = '';
+    pintarPendientes();
+  });
+  $('#adj-pend').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-quitar-adj]'); if (!b) return;
+    pendientes.splice(+b.dataset.quitarAdj, 1); pintarPendientes();
+  });
+  $('#nota-guardar').addEventListener('click', function () {
+    var v = $('#nota-txt').value.trim();
+    if (!v && !pendientes.length) { toast('Escribe la nota o adjunta un documento'); return; }
+    var hoy = new Date(); var f = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+    (notas[actual] = notas[actual] || []).unshift({ t: v, f: f, a: pendientes.slice() });
+    $('#nota-txt').value = ''; pendientes = []; pintarPendientes();
+    guardarNotas(); pintarArticulo(); toast('Nota guardada en Art. ' + actual);
+  });
+  $('#filtro').addEventListener('input', pintarArbol);
+  var resaltar = '';
+  function limpio(t) { return t.replace(/^[#!]/, '').replace(/\{\{[\d-]+\|([^}]*)\}\}/g, '$1').replace(/\{\{([\d-]+)\}\}/g, 'artículo $1'); }
+  function sinTildes(t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+  function buscarLibro(q) {
+    q = q.trim();
+    var num = q.replace(/^art(ículo|iculo)?\.?\s*/i, '');
+    var res = [];
+    if (ARTS[num]) res.push({ id: num, frag: limpio(ARTS[num].texto[0]).slice(0, 160) + '…', exacto: true });
+    else if (q.length >= 3) {
+      var k = sinTildes(q);
+      ORDEN.forEach(function (id) {
+        var a = ARTS[id], todo = a.texto.map(limpio).join(' '), plano = sinTildes(todo);
+        var enTit = sinTildes(a.tit).indexOf(k) >= 0, pos = plano.indexOf(k);
+        if (!enTit && pos < 0) return;
+        var ini = Math.max(0, (pos < 0 ? 0 : pos) - 70);
+        if (ini) { var sp = todo.indexOf(' ', ini); if (sp > 0 && sp < (pos < 0 ? 0 : pos)) ini = sp + 1; }
+        res.push({ id: id, frag: (ini ? '…' : '') + todo.slice(ini, ini + 190) + '…', n: (plano.split(k).length - 1) + (enTit ? 5 : 0) });
+      });
+      res.sort(function (x, y) { return y.n - x.n; });
+    }
+    return res;
+  }
+  function marcar(html, q) {
+    if (!q || q.length < 3) return html;
+    var k = sinTildes(q), out = '', plano = sinTildes(html), i = 0, p;
+    while ((p = plano.indexOf(k, i)) >= 0) { out += html.slice(i, p) + '<mark>' + html.slice(p, p + k.length) + '</mark>'; i = p + k.length; }
+    return out + html.slice(i);
+  }
+  function pintarResultados() {
+    var q = $('#ir-art').value, box = $('#res-libro');
+    if (!q.trim()) { box.hidden = true; return; }
+    var res = buscarLibro(q);
+    box.hidden = false;
+    box.innerHTML = '<div class="res-cab">' + (res.length ? res.length + ' resultado' + (res.length > 1 ? 's' : '') + ' en los artículos cargados' : 'Sin resultados en los artículos cargados. Prueba con otra palabra o un número de artículo.') + '</div>' +
+      res.slice(0, 8).map(function (r) {
+        return '<button type="button" class="res-it" data-art="' + r.id + '" data-q="' + (r.exacto ? '' : esc(q)) + '"><b><span class="an">Art. ' + r.id + '</span>' + marcar(esc(ARTS[r.id].tit), r.exacto ? '' : q) + '</b><span>' + marcar(esc(r.frag), r.exacto ? '' : q) + '</span></button>';
+      }).join('');
+  }
+  $('#ir-art').addEventListener('input', pintarResultados);
+  $('#ir-art').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var primero = $('#res-libro .res-it');
+    if (primero) primero.click(); else toast('Sin resultados para esa búsqueda');
+  });
+  function resaltarTexto() {
+    if (!resaltar) return;
+    var w = document.createTreeWalker($('#hoja-art .texto'), NodeFilter.SHOW_TEXT), nodos = [], n;
+    while ((n = w.nextNode())) nodos.push(n);
+    var k = sinTildes(resaltar), primero = null;
+    nodos.forEach(function (nd) {
+      var t = nd.nodeValue, plano = sinTildes(t), p = plano.indexOf(k);
+      if (p < 0) return;
+      var frag = document.createDocumentFragment(), i = 0;
+      while (p >= 0) {
+        frag.appendChild(document.createTextNode(t.slice(i, p)));
+        var m = document.createElement('mark'); m.textContent = t.slice(p, p + k.length); frag.appendChild(m); if (!primero) primero = m;
+        i = p + k.length; p = plano.indexOf(k, i);
+      }
+      frag.appendChild(document.createTextNode(t.slice(i)));
+      nd.parentNode.replaceChild(frag, nd);
+    });
+  }
+  document.querySelectorAll('.pestana').forEach(function (b) { b.addEventListener('keydown', function (e) {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.pestana')); var i = tabs.indexOf(b);
+    if (e.key === 'ArrowRight') { tabs[(i + 1) % 3].focus(); tabs[(i + 1) % 3].click(); }
+    if (e.key === 'ArrowLeft') { tabs[(i + 2) % 3].focus(); tabs[(i + 2) % 3].click(); }
+  }); });
+
+  pintarLibros();
+  var h = (location.hash || '').replace('#', '');
+  irVista(['bib', 'libro', 'et'].indexOf(h) >= 0 ? h : 'bib');
+})();
+</script>
+
+</body>
+</html>
